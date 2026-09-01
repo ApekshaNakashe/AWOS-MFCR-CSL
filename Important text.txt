@@ -1,0 +1,25 @@
+pip uninstall cryptography
+pip install "cryptography<42.0"
+
+python -m PyInstaller --clean --onefile --windowed --add-data "image;image" main.py
+
+:: 1. Remove the incompatible version from your global Python 3.8
+py -3.8 -m pip uninstall cryptography
+
+:: 2. Install the Windows 7-compatible version globally
+py -3.8 -m pip install "cryptography==41.0.7"
+
+:: 3. Make sure PyQt5 and PyInstaller are fully updated globally
+py -3.8 -m pip install PyQt5 PyInstaller
+
+
+python -m pip uninstall -y cryptography
+python -m pip install cryptography==41.0.7
+
+python -m pip show cryptography
+
+python -c "import PyQt5; import serial; print('PyQt5 version:', PyQt5.QtCore.QT_VERSION_STR); print('pyserial version:', serial.__version__)"
+
+
+python -m pip install PyQt5 pyserial nptdms numpy pywin32 cryptography==41.0.7
+

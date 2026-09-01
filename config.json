@@ -1,0 +1,17 @@
+{
+    "serial": {
+        "port": "COM1",
+        "baudrate": 9600,
+        "timeout": 1
+    },
+    "system": {
+        "gps_offset": "+5:30",
+        "avg_count": 2,
+        "stray_limit": 40,
+        "mode": "GYRO-LOG",
+        "sensor_selection": "MANUAL",
+        "sensor_selected": "STBD",
+        "master_slave": "Master",
+        "ui_Mode": "Night"
+    }
+}
