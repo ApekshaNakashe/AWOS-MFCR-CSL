@@ -47,6 +47,14 @@ class Dashboard(QWidget):
     # ── DELETE FILES OLDER THAN 6 MONTHS ─────────────────────────────
         # delete_old_logs(self)
         # self.enforce_folder_size_limit()
+        self.log_cleanup_timer = QTimer(self)
+        self.log_cleanup_timer.timeout.connect(self.delete_old_logs)
+
+        # Check once immediately
+        self.delete_old_logs()
+
+        # Continue checking every 1 hour
+        self.log_cleanup_timer.start(60 * 60 * 1000)
         LOG_MAX_SIZE_GB   = 30
         LOG_MAX_SIZE_BYTES = LOG_MAX_SIZE_GB * 1024 * 1024 * 1024  
     # ── CREATE NEW LOG FILE WITH .tdms EXTENSION ──────────────────────
@@ -1727,7 +1735,61 @@ class Dashboard(QWidget):
         for lbl in [self.deg_val_unit,self.kts_val_unit]:
             lbl.setStyleSheet(f""" color: {color}; font-size: 20px; font-weight: bold; font-family: "Times New Roman"; border: none;padding: 0px; margin: 0px;line-height: 1; """)
        
-        
+    def delete_old_logs(self):
+        try:
+            cutoff = datetime.datetime.now() - datetime.timedelta(days=183)
+
+            for filename in os.listdir(self.log_dir):
+
+                if not filename.lower().endswith(".awos"):
+                    continue
+
+                filepath = os.path.join(self.log_dir, filename)
+
+                try:
+                    file_time = datetime.datetime.fromtimestamp(
+                        os.path.getmtime(filepath)
+                    )
+
+                    # Only files older than 6 months
+                    if file_time < cutoff:
+
+                        # Unlock the file first
+                        try:
+                            unlock_file(filepath)
+                        except Exception as e:
+                            print(f"Unlock error {filename}: {e}")
+
+                        # Make writable
+                        try:
+                            os.chmod(filepath, stat.S_IWRITE)
+                        except Exception as e:
+                            print(f"Chmod error {filename}: {e}")
+
+                        # Delete
+                        try:
+                            os.remove(filepath)
+                            print(f"Deleted old log: {filename}")
+
+                        except PermissionError as e:
+                            print(
+                                f"Access denied - file still locked: "
+                                f"{filename} | {e}"
+                            )
+
+                        except Exception as e:
+                            print(
+                                f"Delete error {filename}: {e}"
+                            )
+
+                except Exception as e:
+                    print(
+                        f"File check error {filename}: {e}"
+                    )
+
+        except Exception as e:
+            print("Cleanup Error:", e)
+  
    
     def create_sensor_tile(self, name, value, unit, sub_name="", sub_val="", sub_unit=""):
             tile = QFrame()
